@@ -19,6 +19,7 @@ plt.rcParams['font.family'] = 'MS Gothic'
 import io
 import base64
 import requests  # 追加
+import time  # Rate Limit
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -119,6 +120,8 @@ def index():
                 msg['Subject'] = subject
                 msg['From'] = formataddr((from_name, from_email))
                 msg['To'] = to_email
+                msg['Message-ID'] = f"<{hashlib.sha256((to_email + str(datetime.datetime.utcnow())).encode()).hexdigest()}@next21.info>"
+                msg.add_header("List-Unsubscribe", f"<mailto:{from_email}>")
                 msg.attach(MIMEText(body, 'html'))
 
                 if attach_path:
@@ -134,6 +137,8 @@ def index():
                     log.append((to_email, name, email_hash, subject, 'Success', ''))
                 except Exception as e:
                     log.append((to_email, name, email_hash, subject, 'Failed', str(e)))
+
+                time.sleep(1)  # スパム防止のため1秒間隔で送信
 
             server.quit()
 
