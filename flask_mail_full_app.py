@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 plt.rcParams['font.family'] = 'MS Gothic'
 import io
 import base64
+import requests  # 追加
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -177,6 +178,16 @@ def track_open():
 
 @app.route('/analyze', methods=['GET'])
 def analyze():
+    # Renderから開封ログを自動取得
+    try:
+        render_log_url = "https://flask-mail-app-opcz.onrender.com/download-open-log"
+        response = requests.get(render_log_url)
+        if response.status_code == 200:
+            with open(os.path.join(UPLOAD_FOLDER, 'open_log.csv'), 'wb') as f:
+                f.write(response.content)
+    except Exception as e:
+        flash(f"Renderログ取得失敗: {str(e)}", "danger")
+
     master_log_path = os.path.join(UPLOAD_FOLDER, 'mail_log_master.csv')
     open_log_path = os.path.join(UPLOAD_FOLDER, 'open_log.csv')
 
