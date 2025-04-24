@@ -155,7 +155,7 @@ def index():
 @app.route('/open.gif')
 def track_open():
     user_id = request.args.get('id')
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     ip = request.remote_addr
 
     log_path = os.path.join(UPLOAD_FOLDER, 'open_log.csv')
