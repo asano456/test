@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>📊 開封ログ分析</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <h1 class="mb-4">📊 開封ログ分析結果</h1>
+
+    <div class="alert alert-info">
+      🔍 開封総数：{{ unique_opens }} 件 ／ 全送信：{{ total_sent }} 件<br>
+      📈 開封率：{{ impression_rate }}％<br>
+      🕒 最終更新日時：{{ last_updated }}
+    </div>
+
+    <h5 class="mt-4">📆 日別の開封数（棒グラフ）</h5>
+    <img src="data:image/png;base64,{{ graph }}" class="img-fluid border rounded shadow">
+
+    <h5 class="mt-4">📊 開封 vs 未開封（円グラフ）</h5>
+    <img src="data:image/png;base64,{{ pie_chart }}" class="img-fluid border rounded shadow">
+
+    <h5 class="mt-4">👥 開封者一覧（ID別）</h5>
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>開封回数</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for id, count in opened_by.items() %}
+        <tr>
+          <td>{{ id }}</td>
+          <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h5 class="mt-4">📩 DM別開封率</h5>
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>件名</th>
+          <th>開封数</th>
+          <th>送信数</th>
+          <th>開封率（％）</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dm in dm_summary %}
+        <tr>
+          <td>{{ dm.Subject }}</td>
+          <td>{{ dm.Opened }}</td>
+          <td>{{ dm.Total }}</td>
+          <td>{{ dm.Rate }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h5 class="mt-4">📋 開封ログ一覧（アクセス詳細）</h5>
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Timestamp</th>
+          <th>IP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in open_log %}
+        <tr>
+          <td>{{ row['ID'] }}</td>
+          <td>{{ row['Timestamp'] }}</td>
+          <td>{{ row['IP'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <a href="/" class="btn btn-secondary mt-4">← メール送信画面に戻る</a>
+  </div>
+</body>
+</html>
