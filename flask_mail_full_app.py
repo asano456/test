@@ -37,6 +37,13 @@ def generate_test_from_excel():
     except Exception as e:
         return jsonify({"error": f"読み込みエラー: {str(e)}"}), 500
 
+@app.route('/download-open-log')
+def download_open_log():
+    log_path = os.path.join(UPLOAD_FOLDER, 'open_log.csv')
+    if not os.path.exists(log_path):
+        return "ログが存在しません。", 404
+    return send_file(log_path, as_attachment=True)
+
 @app.route('/log-view')
 def view_log_table():
     log_path = os.path.join(UPLOAD_FOLDER, 'mail_log_master.csv')
