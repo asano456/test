@@ -227,13 +227,32 @@ def analyze():
         return redirect('/')
 
     df_sent = pd.read_csv(master_log_path)
-    df_open = pd.read_csv(open_log_path)
+
+    # 過去のバックアップログも取得
+    backup_logs = sorted(
+        [f for f in os.listdir(UPLOAD_FOLDER) if f.startswith('open_log_backup_') and f.endswith('.csv')],
+        reverse=True
+    )
+    options = [('open_log.csv', '最新ログ')]
+    for file in backup_logs:
+        label = file.replace('open_log_backup_', '').replace('.csv', '')
+        options.append((file, label))
+
+    selected_file = request.args.get('log_file', 'open_log.csv')
+    selected_log_path = os.path.join(UPLOAD_FOLDER, selected_file)
+
+    if not os.path.exists(selected_log_path):
+        flash(f"選択されたログファイルが見つかりません: {selected_file}", 'danger')
+        return redirect('/')
+
+    df_open = pd.read_csv(selected_log_path)
 
     if df_open.empty or df_open.shape[0] == 0 or 'Timestamp' not in df_open.columns:
         flash("開封ログがまだ記録されていません。", "warning")
         return render_template("analyze.html", graph="", opened_by={}, impression_rate=0,
                                total_sent=df_sent['ID'].nunique(), unique_opens=0,
-                               pie_chart="", dm_summary=[], open_log=[], last_updated="データなし")
+                               pie_chart="", dm_summary=[], open_log=[], last_updated="データなし",
+                               log_options=options, selected_file=selected_file)
 
     df_open['Timestamp'] = pd.to_datetime(df_open['Timestamp'], errors='coerce')
     df_open.dropna(subset=['Timestamp'], inplace=True)
@@ -241,12 +260,12 @@ def analyze():
         flash("有効な開封ログがありません。", "warning")
         return render_template("analyze.html", graph="", opened_by={}, impression_rate=0,
                                total_sent=df_sent['ID'].nunique(), unique_opens=0,
-                               pie_chart="", dm_summary=[], open_log=[], last_updated="データなし")
+                               pie_chart="", dm_summary=[], open_log=[], last_updated="データなし",
+                               log_options=options, selected_file=selected_file)
 
     df_open['Date'] = df_open['Timestamp'].dt.date
     daily_counts = df_open.groupby('Date').size()
 
-    # ID→名前の変換辞書作成
     id_to_name = dict(zip(df_sent['ID'], df_sent['Name']))
     df_open['Name'] = df_open['ID'].map(id_to_name).fillna('不明')
     opened_by = df_open['Name'].value_counts()
@@ -304,8 +323,9 @@ def analyze():
                            pie_chart=pie_base64,
                            dm_summary=dm_summary,
                            open_log=df_open.to_dict(orient='records'),
-                           last_updated=last_updated)
-
+                           last_updated=last_updated,
+                           log_options=options,
+                           selected_file=selected_file)
 
 if __name__ == '__main__':
     app.run(debug=True)

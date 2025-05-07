@@ -9,11 +9,22 @@
   <div class="container py-5">
     <h1 class="mb-4">📊 開封ログ分析結果</h1>
 
+    <form method="get" action="/analyze" class="mb-4">
+      <div class="input-group">
+        <label class="input-group-text" for="log_file">📂 表示するログファイル：</label>
+        <select class="form-select" id="log_file" name="log_file" onchange="this.form.submit()">
+          {% for file, label in log_options %}
+          <option value="{{ file }}" {% if selected_file == file %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </form>
+
     <div class="alert alert-info">
       🔍 開封総数：{{ unique_opens }} 件 ／ 全送信：{{ total_sent }} 件<br>
       📈 開封率：{{ impression_rate }}％<br>
       🕒 最終更新日時：{{ last_updated }}<br>
-      📂 データソース：{{ open_log_source }}<br>
+      📂 データソース：{{ selected_file }}<br>
     </div>
 
     <div class="card mb-4 shadow-sm">
