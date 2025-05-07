@@ -18,8 +18,8 @@ import matplotlib.pyplot as plt
 plt.rcParams['font.family'] = 'MS Gothic'
 import io
 import base64
-import requests  # 追加
-import time  # Rate Limit
+import requests
+import time
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -45,6 +45,29 @@ def download_open_log():
     if not os.path.exists(log_path):
         return "ログが存在しません。", 404
     return send_file(log_path, as_attachment=True)
+
+@app.route('/export-open-summary')
+def export_open_summary():
+    master_log_path = os.path.join(UPLOAD_FOLDER, 'mail_log_master.csv')
+    open_log_path = os.path.join(UPLOAD_FOLDER, 'open_log.csv')
+
+    if not os.path.exists(master_log_path) or not os.path.exists(open_log_path):
+        return "ログが不足しています。", 404
+
+    df_sent = pd.read_csv(master_log_path)
+    df_open = pd.read_csv(open_log_path)
+
+    df_open['Timestamp'] = pd.to_datetime(df_open['Timestamp'], errors='coerce')
+    df_open.dropna(subset=['Timestamp'], inplace=True)
+    df_open['Date'] = df_open['Timestamp'].dt.date
+
+    id_to_name = dict(zip(df_sent['ID'], df_sent['Name']))
+    df_open['Name'] = df_open['ID'].map(id_to_name)
+
+    summary = df_open.groupby(['Date', 'ID', 'Name']).size().reset_index(name='Count')
+    export_path = os.path.join(UPLOAD_FOLDER, f'open_summary_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.csv')
+    summary.to_csv(export_path, index=False, encoding='utf-8-sig')
+    return send_file(export_path, as_attachment=True)
 
 @app.route('/log-view')
 def view_log_table():
@@ -138,7 +161,7 @@ def index():
                 except Exception as e:
                     log.append((to_email, name, email_hash, subject, 'Failed', str(e)))
 
-                time.sleep(1)  # スパム防止のため1秒間隔で送信
+                time.sleep(1)
 
             server.quit()
 
@@ -183,12 +206,15 @@ def track_open():
 
 @app.route('/analyze', methods=['GET'])
 def analyze():
-    # Renderから開封ログを自動取得
     try:
         render_log_url = "https://flask-mail-app-opcz.onrender.com/download-open-log"
         response = requests.get(render_log_url)
         if response.status_code == 200:
-            with open(os.path.join(UPLOAD_FOLDER, 'open_log.csv'), 'wb') as f:
+            backup_path = os.path.join(UPLOAD_FOLDER, f"open_log_backup_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
+            target_path = os.path.join(UPLOAD_FOLDER, 'open_log.csv')
+            if os.path.exists(target_path):
+                os.rename(target_path, backup_path)
+            with open(target_path, 'wb') as f:
                 f.write(response.content)
     except Exception as e:
         flash(f"Renderログ取得失敗: {str(e)}", "danger")
@@ -218,9 +244,8 @@ def analyze():
                                pie_chart="", dm_summary=[], open_log=[], last_updated="データなし")
 
     df_open['Date'] = df_open['Timestamp'].dt.date
-
-    daily_counts = df_open['Date'].value_counts().sort_index()
-    opened_by = df_open['ID'].value_counts()
+    daily_counts = df_open.groupby('Date').size()
+    opened_by = df_open.groupby('ID').size()
 
     total_sent = df_sent['ID'].nunique()
     unique_opens = df_open['ID'].nunique()
