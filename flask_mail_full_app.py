@@ -245,7 +245,11 @@ def analyze():
 
     df_open['Date'] = df_open['Timestamp'].dt.date
     daily_counts = df_open.groupby('Date').size()
-    opened_by = df_open.groupby('ID').size()
+
+    # ID→名前の変換辞書作成
+    id_to_name = dict(zip(df_sent['ID'], df_sent['Name']))
+    df_open['Name'] = df_open['ID'].map(id_to_name).fillna('不明')
+    opened_by = df_open['Name'].value_counts()
 
     total_sent = df_sent['ID'].nunique()
     unique_opens = df_open['ID'].nunique()
@@ -301,6 +305,7 @@ def analyze():
                            dm_summary=dm_summary,
                            open_log=df_open.to_dict(orient='records'),
                            last_updated=last_updated)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
