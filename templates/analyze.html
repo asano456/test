@@ -12,76 +12,99 @@
     <div class="alert alert-info">
       🔍 開封総数：{{ unique_opens }} 件 ／ 全送信：{{ total_sent }} 件<br>
       📈 開封率：{{ impression_rate }}％<br>
-      🕒 最終更新日時：{{ last_updated }}
+      🕒 最終更新日時：{{ last_updated }}<br>
+      📂 データソース：{{ open_log_source }}<br>
     </div>
 
-    <h5 class="mt-4">📆 日別の開封数（棒グラフ）</h5>
-    <img src="data:image/png;base64,{{ graph }}" class="img-fluid border rounded shadow">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">📆 日別の開封数（棒グラフ）</h5>
+        <img src="data:image/png;base64,{{ graph }}" class="img-fluid rounded">
+      </div>
+    </div>
 
-    <h5 class="mt-4">📊 開封 vs 未開封（円グラフ）</h5>
-    <img src="data:image/png;base64,{{ pie_chart }}" class="img-fluid border rounded shadow">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">📊 開封 vs 未開封（円グラフ）</h5>
+        <img src="data:image/png;base64,{{ pie_chart }}" class="img-fluid rounded">
+      </div>
+    </div>
 
-    <h5 class="mt-4">👥 開封者一覧（ID別）</h5>
-    <table class="table table-bordered">
-      <thead class="table-light">
-        <tr>
-          <th>ID</th>
-          <th>開封回数</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for id, count in opened_by.items() %}
-        <tr>
-          <td>{{ id }}</td>
-          <td>{{ count }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">👥 開封者一覧（名前別）</h5>
+        <table class="table table-bordered mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>名前</th>
+              <th>開封回数</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for name, count in opened_by.items() %}
+            <tr>
+              <td>{{ name }}</td>
+              <td>{{ count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-    <h5 class="mt-4">📩 DM別開封率</h5>
-    <table class="table table-bordered">
-      <thead class="table-light">
-        <tr>
-          <th>件名</th>
-          <th>開封数</th>
-          <th>送信数</th>
-          <th>開封率（％）</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for dm in dm_summary %}
-        <tr>
-          <td>{{ dm.Subject }}</td>
-          <td>{{ dm.Opened }}</td>
-          <td>{{ dm.Total }}</td>
-          <td>{{ dm.Rate }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">📩 DM別開封率</h5>
+        <table class="table table-bordered mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>件名</th>
+              <th>開封数</th>
+              <th>送信数</th>
+              <th>開封率（％）</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for dm in dm_summary %}
+            <tr>
+              <td>{{ dm.Subject }}</td>
+              <td>{{ dm.Opened }}</td>
+              <td>{{ dm.Total }}</td>
+              <td>{{ dm.Rate }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-    <h5 class="mt-4">📋 開封ログ一覧（アクセス詳細）</h5>
-    <table class="table table-bordered">
-      <thead class="table-light">
-        <tr>
-          <th>ID</th>
-          <th>Timestamp</th>
-          <th>IP</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in open_log %}
-        <tr>
-          <td>{{ row['ID'] }}</td>
-          <td>{{ row['Timestamp'] }}</td>
-          <td>{{ row['IP'] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">📋 開封ログ一覧（アクセス詳細）</h5>
+        <table class="table table-bordered mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>名前</th>
+              <th>Timestamp</th>
+              <th>IP</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in open_log %}
+            <tr>
+              <td>{{ row['Name'] }}</td>
+              <td>{{ row['Timestamp'] }}</td>
+              <td>{{ row['IP'] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-    <a href="/" class="btn btn-secondary mt-4">← メール送信画面に戻る</a>
+    <div class="text-center">
+      <a href="/" class="btn btn-secondary mt-3">← メール送信画面に戻る</a>
+    </div>
   </div>
 </body>
 </html>
